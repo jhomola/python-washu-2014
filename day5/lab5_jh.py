@@ -1,5 +1,5 @@
-"""Data Structures
-Working with Graphs/Networks"""
+from math import *
+from itertools import *
 
 def makeLink(G, node1, node2):
   if node1 not in G:
@@ -10,26 +10,22 @@ def makeLink(G, node1, node2):
   (G[node2])[node1] = 1
   return G 
 
-# Ring Network
-ring = {} # empty graph 
+square = {}
+n = 256
 
-n = 5 # number of nodes 
 
-# Add in edges
-for i in range(n):
-  ring = makeLink(ring, i, (i+1)%n)
+for i in range(1,n):
+  if(i % sqrt(n) != 0): square = makeLink(square, i, i+1)
+  if (i < (n - sqrt(n) + 1)): square = makeLink(square, i, (i + int(sqrt(n))))
+
+# Show our graph
+print square
 
 # How many nodes?
-print len(ring)
+print len(square)
 
 # How many edges?
-print sum([len(ring[node]) for node in ring.keys()])/2 
-
-
-# Grid Network
-# TODO: create a square graph with 256 nodes and count the edges 
-# TODO: define a function countEdges
-
+print sum([len(square[node]) for node in square.keys()])/2 
 
 # Social Network
 class Actor(object):
@@ -60,50 +56,48 @@ makeLink(movies, kb, ms) # The River Wild
 makeLink(movies, ah, ms) # Devil Wears Prada
 makeLink(movies, ah, jr) # Valentine's Day
 
+print movies
+
 # How many nodes in movies?
+nodesMovies = len(movies)
+
 # How many edges in movies?
+edgesMovies = sum([len(movies[node]) for node in movies.keys()])/2
+print "There are %d nodes and %d edges in the Movie tree" % (nodesMovies, edgesMovies)
 
 def tour(graph, nodes):
-  for i in range(len(nodes)):
-    node = nodes[i] 
-    if node in graph.keys():
-      print node 
-    else:
-      print "Node not found!"
-      break 
-    if i+1 < len(nodes):
-      next_node = nodes[i+1]
-      if next_node in graph.keys():
-        if next_node in graph[node].keys():
-          pass 
-        else:
-          print "Can't get there from here!"
-          break 
+	tour_list = []
+	for i in range(len(nodes)):
+		node = nodes[i] 
+		if node in graph.keys():
+      		#print node 
+			tour_list.append(node)
+		else:
+      		#print "Node not found!"
+			break 
+		if i+1 < len(nodes):
+			next_node = nodes[i+1]
+		if next_node in graph.keys():
+			if next_node in graph[node].keys():
+				pass 
+			else:
+          #print "Can't get there from here!"
+				break 
+	#print tour_list
+	if len(tour_list) == 7: print tour_list
+	if len(tour_list) == 7: 
+		return tour_list
+	else: pass
+
+
 
 # TODO: find an Eulerian tour of the movie network and check it 
-movie_tour = [] 
-tour(movies, movie_tour)
 
+perm_Movies = list(permutations(movies.keys()))
 
-def findPath(graph, start, end, path=[]):
-        path = path + [start]
-        if start == end:
-            return path
-        if not graph.has_key(start):
-            return None
-        for node in graph[start]:
-            if node not in path:
-                newpath = findPath(graph, node, end, path)
-                if newpath: return newpath
-        return None
+all_paths = []
 
-print findPath(movies, jr, ms)
+for i in range(len(perm_Movies)):
+	if (tour(movies, perm_Movies[i]) != None): all_paths.append(tour(movies, perm_Movies[i]))
 
-
-# TODO: implement findShortestPath()
-# print findShortestPath(movies, ms, ss)
-
-# TODO: implement findAllPaths() to find all paths between two nodes
-# allPaths = findAllPaths(movies, jr, ms)
-# for path in allPaths:
-#   print path
+#print all_paths
