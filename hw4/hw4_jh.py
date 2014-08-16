@@ -18,7 +18,7 @@ class LinkedList:
 		return self.length
 		
 	def addNode(self, new_value):		# Add a new node at the end of the list and increase length
-		# O(n) complexity
+		# O(1) complexity
 		node = Node(new_value)
 		if self.head == None: self.head = node
 		if self.tail != None: self.tail.next = node
