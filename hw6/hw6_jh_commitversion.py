@@ -1,11 +1,11 @@
-import tweepy, operator, time
+import tweepy, operator, time, csv
 
 #Create txt file to store results
 text_file = open("results.txt", "w")
 
 #First parameter is Consumer Key, second is Consumer Secret 
-auth = tweepy.OAuthHandler('', '')		# EMPTY
-auth.set_access_token('', '')			# EMPTY    
+auth = tweepy.OAuthHandler('', '')			# EMPTY !!!
+auth.set_access_token('', '')  				# EMPTY !!!  
 api = tweepy.API(auth)
 
 #Specify target user
@@ -14,6 +14,7 @@ text_file.write("***********\nTarget account name: %s\nTarget has %i followers\n
 
 #Save the target's list of followers
 followers = api.followers_ids(id=target.screen_name)
+following = api.friends_ids(id=target.screen_name)
 
 #Create followers of followers dictionary
 foff = {}
@@ -29,22 +30,36 @@ text_file.write("\n***********\n%s is the most followed user that follows the ta
 
 #Create activity dictionary
 active = {}
-for i in range(len(followers)):
+for i in range(len(following)):
 	time.sleep(5.1)				# avoids request limit violations
 	try:	# skip users with protected tweets
-		temp = api.user_timeline(id=followers[i])
+		temp = api.user_timeline(id=following[i])
 	except tweepy.error.TweepError: pass
 	if len(temp) == 20:
-		active[followers[i]] = temp[19].created_at
-	if i % 10 == 0:	print "%i of %i followers analysed for 'most active' analysis" % (i, len(followers)+1)	# keep track of analysis progress
+		active[following[i]] = temp[19].created_at
+	if i % 10 == 0:	print "%i of %i followers analysed for 'most active' analysis" % (i, len(following)+1)	# keep track of analysis progress
 
 #Find most active
 activeid = max(active.iteritems(), key=operator.itemgetter(1))[0]
 mostactive = api.get_user(id=activeid)
-text_file.write("\n***********\n%s is the most active user that follows the target \n(Measured as: 20 most recent tweets in the shortest time among users with at least 20 tweets) \n%s's 20th most recent tweet was published on: %s\n***********" % (mostactive.screen_name, mostactive.screen_name, max(active.values())))
+text_file.write("\n***********\n%s is the most active user that the target follows \n(Measured as: 20 most recent tweets in the shortest time among users with at least 20 tweets) \n%s's 20th most recent tweet was published on: %s\n***********" % (mostactive.screen_name, mostactive.screen_name, max(active.values())))
 
 text_file.close()
+
+writer = csv.writer(open('twitter_popular.csv', 'wb'))
+header = ["user_id", "followers"]
+writer.writerow(header)
+for key, value in foff.items():
+	writer.writerow([key, value])
+
+writer1 = csv.writer(open('twitter_active.csv', 'wb'))
+header1 = ["user_id", "20th_tweet"]
+writer1.writerow(header1) 
+for key, value in active.items():  
+	writer1.writerow([key, value])
 
 ### The created txt file includes all the answers for the first-degree part of the questions
 ### I did not do the second-degree part due to the rate restrictions
 ### However, it would be relatively easy to implement by simply running the same code on the initially extracted list of followers' followers
+
+### The csv files store the results to have them ready for hw7
